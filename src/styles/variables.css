@@ -1,0 +1,98 @@
+/* ========================================
+   CSS VARIABLES - Auto-synced with colors.js
+   DO NOT EDIT MANUALLY - Update colors.js instead
+   ======================================== */
+
+:root {
+  /* Primary Colors - from colors.js */
+  --color-primary-main: #23214B;
+  --color-primary-dark: #1E40AF;
+  --color-primary-light: #60A5FA;
+
+  /* Secondary Colors - from colors.js */
+  --color-secondary-main: #22C55E;
+  --color-secondary-dark: #15803D;
+  --color-secondary-light: #86EFAC;
+
+  /* Background - from colors.js */
+  --color-bg-default: #0f1025;
+  --color-bg-paper: #FFFFFF;
+
+  /* Divider - from colors.js */
+  --color-divider: #E2E8F0;
+
+  /* Error - from colors.js */
+  --color-error-main: #EF4444;
+
+  /* Warning - from colors.js */
+  --color-warning-main: #F59E0B;
+
+  /* Info - from colors.js */
+  --color-info-main: #0EA5E9;
+
+  /* Success - from colors.js */
+  --color-success-main: #22C55E;
+
+  /* Button - from colors.js */
+  --color-button-main: #38BDF8;
+  --color-button-dark: #0EA5E9;
+  --color-button-light: #7DD3FC;
+
+  /* Button Custom - from colors.js */
+  --color-btn-primary-bg: #6D5DF6;
+  --color-btn-primary-hover: #5B4FE1;
+  --color-btn-primary-text: #FFFFFF;
+  --color-btn-secondary-bg: #38BDF8;
+  --color-btn-secondary-hover: #0EA5E9;
+  --color-btn-secondary-text: #0F172A;
+
+  /* Text - from colors.js */
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #D1D5DB;
+  --color-text-disabled: #9CA3AF;
+  --color-text-hint: #6B7280;
+
+  /* Custom - from colors.js */
+  --color-cus-primary: #1E2147;
+  --color-cus-secondary: #262A5F;
+  --color-cus-hover: #2E3375;
+
+  /* Spacing */
+  --spacing-1: 0.5rem;
+  --spacing-2: 1rem;
+  --spacing-3: 1.5rem;
+  --spacing-4: 2rem;
+
+  /* Border Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Typography */
+  --font-family: "Inter, sans-serif";
+  --font-size-h1: 2.5rem;
+  --font-size-h2: 2rem;
+  --font-size-h3: 1.6rem;
+  --font-size-h4: 1.4rem;
+  --font-size-h5: 1.2rem;
+  --font-size-body1: 1rem;
+  --font-size-body2: 0.875rem;
+
+  --font-weight-h1: 700;
+  --font-weight-h2: 700;
+  --font-weight-h3: 600;
+  --font-weight-h4: 600;
+  --font-weight-h5: 500;
+  --font-weight-body1: 400;
+  --font-weight-body2: 400;
+
+  /* Shape */
+  --border-radius-default: 12px;
+}
