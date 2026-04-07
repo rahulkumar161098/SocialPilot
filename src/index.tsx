@@ -7,8 +7,6 @@ import reportWebVitals from './reportWebVitals';
 import theme from './theme';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import { Theme } from '@mui/material';
-import Footer from './components/Footer/Footer';
 import { BrowserRouter } from 'react-router-dom';
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
