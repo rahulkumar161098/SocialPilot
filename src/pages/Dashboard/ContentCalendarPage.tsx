@@ -7,9 +7,6 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
-import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
-import ChevronLeft from "@mui/icons-material/ChevronLeft";
-import ChevronRight from "@mui/icons-material/ChevronRight";
 import LightbulbOutlined from "@mui/icons-material/LightbulbOutlined";
 import EditOutlined from "@mui/icons-material/EditOutlined";
 import DeleteOutline from "@mui/icons-material/DeleteOutline";
@@ -24,10 +21,16 @@ import {
   TEXT_TITLE,
   cardShell,
 } from "./dashboardTokens";
+import { DateCalendar, LocalizationProvider, PickersDay } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import type { PickersDayProps } from "@mui/x-date-pickers/PickersDay";
+import dayjs, { type Dayjs } from "dayjs";
+
+type PlatformFilter = "all" | "instagram" | "twitter" | "linkedin";
 
 function tagVisible(
   tag: { label: string },
-  filter: "all" | "instagram" | "twitter" | "linkedin",
+  filter: PlatformFilter,
 ): boolean {
   if (filter === "all") return true;
   const L = tag.label.toLowerCase();
@@ -37,8 +40,6 @@ function tagVisible(
   return true;
 }
 
-const DAY_HEADERS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"] as const;
-
 const TAGS_BY_DAY: Record<number, { label: string; tone: "blue" | "gray" }[]> = {
   3: [
     { label: "Insta Reel", tone: "blue" },
@@ -47,32 +48,104 @@ const TAGS_BY_DAY: Record<number, { label: string; tone: "blue" | "gray" }[]> = 
   6: [{ label: "X Post", tone: "blue" }],
 };
 
-function buildMonthGrid(year: number, monthIndex: number): (number | null)[][] {
-  const first = new Date(year, monthIndex, 1);
-  const startPad = first.getDay();
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  const cells: (number | null)[] = [];
-  for (let i = 0; i < startPad; i += 1) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d += 1) cells.push(d);
-  while (cells.length % 7 !== 0) cells.push(null);
-  const rows: (number | null)[][] = [];
-  for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7));
-  return rows;
+function TaggedDay(props: PickersDayProps & { filter: PlatformFilter }) {
+  const { filter, day, outsideCurrentMonth, selected, ...pickersDayProps } = props;
+  const dayNum = dayjs(day).date();
+  const tags = outsideCurrentMonth
+    ? []
+    : (TAGS_BY_DAY[dayNum] ?? []).filter((tag) => tagVisible(tag, filter));
+
+  return (
+    <PickersDay
+      day={day}
+      outsideCurrentMonth={outsideCurrentMonth}
+      selected={selected}
+      {...pickersDayProps}
+      sx={{
+        width: "100%",
+        maxWidth: "none",
+        minHeight: { xs: 72, sm: 88 },
+        height: "auto",
+        border: `1px solid ${outsideCurrentMonth ? "transparent" : BORDER_SUBTLE}`,
+        borderRadius: "10px",
+        bgcolor: outsideCurrentMonth ? "transparent" : CARD_BG,
+        flexDirection: "column",
+        alignItems: "stretch",
+        justifyContent: "flex-start",
+        p: 0.75,
+        m: "3px",
+        fontSize: "0.75rem",
+        "&.Mui-selected": {
+          bgcolor: `${PRIMARY} !important`,
+          color: "#fff",
+          borderColor: PRIMARY,
+          "&:hover, &:focus": {
+            bgcolor: `${PRIMARY} !important`,
+          },
+        },
+        "&:not(.Mui-selected)": {
+          color: TEXT_TITLE,
+        },
+      }}
+    >
+      <Typography
+        component="span"
+        variant="caption"
+        sx={{ fontWeight: 700, color: "inherit", alignSelf: "flex-end", lineHeight: 1.2 }}
+      >
+        {dayNum}
+      </Typography>
+      {!outsideCurrentMonth && tags.length > 0 ? (
+        <Stack spacing={0.35} sx={{ mt: "auto", width: "100%" }}>
+          {tags.map((tag) => (
+            <Box
+              key={tag.label}
+              sx={{
+                fontSize: "0.65rem",
+                fontWeight: 700,
+                px: 0.75,
+                py: 0.35,
+                borderRadius: "6px",
+                lineHeight: 1.2,
+                textAlign: "center",
+                bgcolor: selected
+                  ? tag.tone === "blue"
+                    ? "rgba(255,255,255,0.2)"
+                    : "rgba(255,255,255,0.12)"
+                  : tag.tone === "blue"
+                    ? "rgba(59, 76, 184, 0.12)"
+                    : MUTED_BG,
+                color: selected
+                  ? tag.tone === "blue"
+                    ? "#e8eaff"
+                    : "rgba(255,255,255,0.92)"
+                  : tag.tone === "blue"
+                    ? PRIMARY
+                    : TEXT_BODY,
+                border: tag.tone === "gray" ? `1px solid ${selected ? "rgba(255,255,255,0.25)" : BORDER_SUBTLE}` : "1px solid transparent",
+              }}
+            >
+              {tag.label}
+            </Box>
+          ))}
+        </Stack>
+      ) : null}
+    </PickersDay>
+  );
 }
 
-const monthLabel = (d: Date) =>
-  d.toLocaleString("en-US", { month: "long", year: "numeric" });
-
 export default function ContentCalendarPage() {
-  const [cursor, setCursor] = React.useState(() => new Date(2023, 9, 1));
-  const [filter, setFilter] = React.useState<"all" | "instagram" | "twitter" | "linkedin">("all");
+  const [selected, setSelected] = React.useState<Dayjs | null>(() => dayjs().startOf("day"));
+  const [visibleMonth, setVisibleMonth] = React.useState(() => dayjs().startOf("month"));
+  const [filter, setFilter] = React.useState<PlatformFilter>("all");
 
-  const year = cursor.getFullYear();
-  const month = cursor.getMonth();
-  const grid = React.useMemo(() => buildMonthGrid(year, month), [year, month]);
-
-  const prevMonth = () => setCursor(new Date(year, month - 1, 1));
-  const nextMonth = () => setCursor(new Date(year, month + 1, 1));
+  const daySlot = React.useMemo(
+    () =>
+      function DaySlot(p: PickersDayProps) {
+        return <TaggedDay {...p} filter={filter} />;
+      },
+    [filter],
+  );
 
   const filterTabs: { id: typeof filter; label: string }[] = [
     { id: "all", label: "All Posts" },
@@ -136,110 +209,110 @@ export default function ContentCalendarPage() {
           alignItems: "start",
         }}
       >
-        <Card elevation={0} sx={cardShell}>
-          <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-              <Button
-                endIcon={<KeyboardArrowDown sx={{ fontSize: 20 }} />}
+        <Card elevation={0} sx={{ ...cardShell, overflow: "visible",  height: "100%" }}>
+          <CardContent sx={{ p: { xs: 2, sm: 2.5 }, overflow: "visible" }}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateCalendar
+                value={selected}
+                onChange={(v) => setSelected(v)}
+                referenceDate={visibleMonth}
+                onMonthChange={(m) => setVisibleMonth(dayjs(m).startOf("month"))}
+                onYearChange={(y) =>
+                  setVisibleMonth((prev) => prev.year(dayjs(y).year()).startOf("month"))
+                }
+                showDaysOutsideCurrentMonth
+                slots={{ day: daySlot }}
                 sx={{
-                  color: TEXT_TITLE,
-                  textTransform: "none",
-                  fontWeight: 800,
-                  fontSize: "1.05rem",
-                  p: 0,
-                  minWidth: 0,
-                  "&:hover": { bgcolor: "transparent" },
-                }}
-              >
-                {monthLabel(cursor)}
-              </Button>
-              <Stack direction="row" spacing={0.5}>
-                <IconButton size="small" onClick={prevMonth} aria-label="Previous month">
-                  <ChevronLeft />
-                </IconButton>
-                <IconButton size="small" onClick={nextMonth} aria-label="Next month">
-                  <ChevronRight />
-                </IconButton>
-              </Stack>
-            </Stack>
-
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(7, 1fr)",
-                gap: 0.75,
-              }}
-            >
-              {DAY_HEADERS.map((h) => (
-                <Typography
-                  key={h}
-                  variant="caption"
-                  sx={{
-                    textAlign: "center",
+                  width: 1,
+                  maxWidth: 1,
+                  overflow: "visible",
+                  /** Default day grid assumes ~36px cells; tall custom days + overflow:hidden clip the grid */
+                  "& .MuiDayCalendar-root": { overflow: "visible" },
+                  "& .MuiDayCalendar-monthContainer": { overflow: "visible" },
+                  "& .MuiDayCalendar-slideTransition": {
+                    minHeight: { xs: 440, sm: 540 },
+                    overflow: "visible",
+                  },
+                  "& .MuiPickersSlideTransition-root": {
+                    minHeight: { xs: 440, sm: 540 },
+                    overflowX: "hidden",
+                    overflowY: "visible",
+                  },
+                  /**
+                   * App theme is dark (light text); this card is light. Year/month pickers use
+                   * color: unset and inherit white text → invisible on white. Force readable colors.
+                   */
+                  "& .MuiYearCalendar-button": {
+                    color: TEXT_TITLE,
+                  },
+                  "& .MuiYearCalendar-button.MuiYearCalendar-disabled": {
+                    color: TEXT_BODY,
+                    opacity: 0.55,
+                  },
+                  "& .MuiYearCalendar-button.MuiYearCalendar-selected": {
+                    color: "#fff",
+                    backgroundColor: PRIMARY,
+                    "&:hover, &:focus": {
+                      backgroundColor: PRIMARY,
+                      opacity: 0.92,
+                    },
+                  },
+                  "& .MuiMonthCalendar-button": {
+                    color: TEXT_TITLE,
+                  },
+                  "& .MuiMonthCalendar-button.MuiMonthCalendar-disabled": {
+                    color: TEXT_BODY,
+                    opacity: 0.55,
+                  },
+                  "& .MuiMonthCalendar-button.MuiMonthCalendar-selected": {
+                    color: "#fff",
+                    backgroundColor: PRIMARY,
+                    "&:hover, &:focus": {
+                      backgroundColor: PRIMARY,
+                      opacity: 0.92,
+                    },
+                  },
+                  "& .MuiPickersCalendarHeader-root": {
+                    pl: 0,
+                    pr: 0,
+                    pt: 0,
+                    mb: 1.5,
+                    maxHeight: "none",
+                    overflow: "visible",
+                  },
+                  "& .MuiPickersCalendarHeader-label": {
+                    color: TEXT_TITLE,
+                    fontWeight: 800,
+                    fontSize: "1.05rem",
+                  },
+                  "& .MuiPickersArrowSwitcher-root .MuiIconButton-root": {
+                    color: TEXT_TITLE,
+                  },
+                  "& .MuiDayCalendar-weekContainer": {
+                    margin: 0,
+                    gap: 0,
+                  },
+                  "& .MuiDayCalendar-headerContainer": {
+                    justifyContent: "stretch",
+                    gap: 0.75,
+                    mb: 0.5,
+                  },
+                  "& .MuiDayCalendar-weekDayLabel": {
+                    width: "100%",
+                    maxWidth: "none",
+                    margin: 0,
                     fontWeight: 700,
+                    fontSize: "0.7rem",
                     letterSpacing: "0.06em",
                     color: TEXT_BODY,
                     py: 0.75,
-                  }}
-                >
-                  {h}
-                </Typography>
-              ))}
-              {grid.map((week, ri) =>
-                week.map((day, ci) => (
-                  <Box
-                    key={`${year}-${month}-${ri}-${ci}`}
-                    sx={{
-                      minHeight: { xs: 72, sm: 88 },
-                      border: `1px solid ${BORDER_SUBTLE}`,
-                      borderRadius: "10px",
-                      bgcolor: day ? CARD_BG : "transparent",
-                      p: day ? 0.75 : 0,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 0.5,
-                    }}
-                  >
-                    {day != null && (
-                      <>
-                        <Typography
-                          variant="caption"
-                          sx={{ fontWeight: 700, color: TEXT_TITLE, alignSelf: "flex-end" }}
-                        >
-                          {day}
-                        </Typography>
-                        <Stack spacing={0.35} sx={{ mt: "auto" }}>
-                          {(TAGS_BY_DAY[day] ?? [])
-                            .filter((tag) => tagVisible(tag, filter))
-                            .map((tag) => (
-                              <Box
-                                key={tag.label}
-                                sx={{
-                                  fontSize: "0.65rem",
-                                  fontWeight: 700,
-                                  px: 0.75,
-                                  py: 0.35,
-                                  borderRadius: "6px",
-                                  lineHeight: 1.2,
-                                  textAlign: "center",
-                                  bgcolor: tag.tone === "blue" ? "rgba(59, 76, 184, 0.12)" : MUTED_BG,
-                                  color: tag.tone === "blue" ? PRIMARY : TEXT_BODY,
-                                  border:
-                                    tag.tone === "gray" ? `1px solid ${BORDER_SUBTLE}` : "1px solid transparent",
-                                }}
-                              >
-                                {tag.label}
-                              </Box>
-                            ))}
-                        </Stack>
-                      </>
-                    )}
-                  </Box>
-                ))
-              )}
-            </Box>
+                  },
+                }}
+              />
+            </LocalizationProvider>
           </CardContent>
         </Card>
+        
 
         <Stack spacing={2}>
           <Typography fontWeight={800} fontSize="1.1rem" sx={{ color: TEXT_TITLE }}>
