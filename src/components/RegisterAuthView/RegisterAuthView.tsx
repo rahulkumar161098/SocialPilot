@@ -21,6 +21,9 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CloseIcon from "@mui/icons-material/Close";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { createUser } from "../../api/userApi";
+import OtpVerificationDialog from "../../dailogs/OtpVerificationDialog/OtpVerificationDialog";
 
 const NAVY = "#1E2B6E";
 const NAVY_DEEP = "#162456";
@@ -91,14 +94,15 @@ export function RegisterAuthView({
   onRegistrationComplete,
 }: RegisterAuthViewProps) {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [agreed, setAgreed] = React.useState(false);
-  const [toastOpen, setToastOpen] = React.useState(true);
-  const [fullName, setFullName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [toastOpen, setToastOpen] = useState(true);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [otpOpen, setOtpOpen] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) {
       setFullName("");
       setEmail("");
@@ -114,14 +118,21 @@ export function RegisterAuthView({
   const canCreateAccount =
     agreed && Boolean(email.trim()) && Boolean(password) && Boolean(fullName.trim());
 
-  const handleCreateAccount = () => {
-    if (!canCreateAccount) return;
-    const trimmedEmail = email.trim();
-    if (onRegistrationComplete) {
-      onRegistrationComplete(trimmedEmail);
-      return;
+  const handleCreateAccount = async () => {
+    debugger
+    const split_name = fullName.split(" ");
+    const userData = {
+      email: email,
+      password:password,
+      first_name: split_name[0],
+      last_name: split_name[1] || "",
+    };
+    try {
+      await createUser(userData);
+      setOtpOpen(true);
+    } catch (error) {
+      console.log(error);
     }
-    navigate("/dashboard");
   };
 
   const signInEl = onRequestSignIn ? (
@@ -305,6 +316,14 @@ export function RegisterAuthView({
           </Link>
         </Box>
       </Box>
+
+      <OtpVerificationDialog
+        open={otpOpen}
+        onClose={() => setOtpOpen(false)}
+        email={email || "rahulkumar161098@gmail.com"}
+        onRequestLogout={() => setOtpOpen(false)}
+        registrationFlow
+      />
 
       {/* Right — form */}
       <Box

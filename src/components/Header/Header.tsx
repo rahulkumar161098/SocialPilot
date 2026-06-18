@@ -129,17 +129,17 @@ export default function Header(props: HeaderProps) {
         onClose={handleCloseSignIn}
         onSwitchToRegister={() => setSignUpOpen(true)}
       />
-      <OtpVerificationDialog
+      {/* <OtpVerificationDialog
         open={otpOpen}
         onClose={() => {
           setOtpOpen(false);
           setOtpEmail("");
         }}
         email={otpEmail}
-        onVerified={handleOtpVerified}
+        // onVerified={handleOtpVerified}
         onRequestLogout={handleOtpAbortRegistration}
         registrationFlow
-      />
+      /> */}
       <SignUpDialog
         open={signUpOpen}
         onClose={() => setSignUpOpen(false)}

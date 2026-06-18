@@ -16,6 +16,11 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { getUser, createUser } from "../../api/userApi";
+import { useEffect, useState } from "react";
+import { error, log } from "console";
+import apiClient from "../../api/apiClient";
+import { userLogin } from "../../api/userApi";
 
 const NAVY = "#1E2B6E";
 
@@ -75,11 +80,11 @@ function SignInDialog({
   onSwitchToRegister,
 }: SignInDialogProps) {
   const navigate = useNavigate();
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [remember, setRemember] = React.useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) {
       setEmail("");
       setPassword("");
@@ -91,6 +96,7 @@ function SignInDialog({
     onClose();
   };
 
+
   const canSubmit = Boolean(email.trim() && password);
 
   const handleSignIn = (e: React.FormEvent) => {
@@ -101,6 +107,36 @@ function SignInDialog({
     navigate("/dashboard");
     onClose();
   };
+
+  const fetchAllUser = async()=>{
+    try{
+      const response= await getUser()
+      return response
+    } catch(error){
+      console.error(error)
+    }
+  }
+
+  useEffect(()=>{
+    fetchAllUser()
+  },[])
+
+  const handleLoginUser= async()=>{
+    debugger
+    const userData= {
+    "email" : email, 
+    "password": password,
+    }
+    debugger
+    try{
+      const resp = await userLogin(userData)
+      
+      console.log(resp);
+      
+    } catch(error) {
+      console.error(error)
+    }
+  }
 
   const socialButtonSx = {
     flex: 1,
@@ -354,6 +390,7 @@ function SignInDialog({
             variant="contained"
             color="primary"
             size="large"
+            onClick={handleLoginUser}
             disabled={!canSubmit}
             endIcon={<ArrowForwardIcon />}
             sx={{ py: 1.25, fontWeight: 700, borderRadius: 2, textTransform: "none", fontSize: "1rem" }}
