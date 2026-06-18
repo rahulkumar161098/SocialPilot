@@ -8,6 +8,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { Link as RouterLink } from "react-router-dom";
+import { otpVarification } from "../../api/userApi";
 
 const NAVY = "#1E2B6E";
 const NAVY_MID = "#24367F";
@@ -18,7 +19,6 @@ export interface OtpVerificationDialogProps {
   open: boolean;
   onClose: () => void;
   email: string;
-  onVerified: () => void;
   /** User abandons verification — e.g. return to sign-in or sign-up */
   onRequestLogout?: () => void;
   /** Copy tuned for post-registration verification (vs login). */
@@ -35,13 +35,15 @@ export default function OtpVerificationDialog({
   open,
   onClose,
   email,
-  onVerified,
+  // onVerified,
   onRequestLogout,
   registrationFlow = false,
 }: OtpVerificationDialogProps) {
   const [digits, setDigits] = React.useState<string[]>(() =>
     Array(OTP_LENGTH).fill("")
   );
+  console.log("open otp", open)
+  console.log("email", email)
   const [resendIn, setResendIn] = React.useState(0);
   const [resendNonce, setResendNonce] = React.useState(0);
   const inputsRef = React.useRef<(HTMLInputElement | null)[]>([]);
@@ -98,8 +100,22 @@ export default function OtpVerificationDialog({
   };
 
   const handleVerify = () => {
+    debugger
     if (!codeComplete) return;
-    onVerified();
+    console.log(digits)
+
+    const payload= {
+      email: email,
+      otp:  digits
+    }
+
+    const  handleOtpVarification= async()=>{
+      const resp = await otpVarification(payload)
+      return resp
+    }
+
+  handleOtpVarification()
+    // onVerified();
   };
 
   const handleResend = () => {
